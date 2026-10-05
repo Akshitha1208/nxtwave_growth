@@ -19,16 +19,28 @@ if (isProduction) {
   }
 }
 
-const allowedOrigins = new Set([
-  ...(process.env.CLIENT_URL ? [new URL(clientUrl).origin] : []),
-  ...(!isProduction ? ['http://localhost:5173', 'http://127.0.0.1:5173'] : []),
-]);
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+].filter(Boolean);
 
 const prisma = new PrismaClient();
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (
+      allowedOrigins.includes(origin) ||
+      /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/.test(origin)
+    ) {
+      return callback(null, true);
+    }
+
+    console.error(`CORS blocked origin: ${origin}`);
     return callback(new Error('Origin not allowed by CORS.'));
   },
   credentials: true,
