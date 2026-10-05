@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id                 String         @id @default(cuid())
+  name               String
+  email              String         @unique
+  phone              String
+  college            String
+  branch             String
+  graduationYear     Int
+  referralCode       String         @unique
+  recommendedProject String?
+  buildabilityScore  Int?
+  quizAnswers        String?
+  source             String?
+  utmSource          String?
+  utmMedium          String?
+  utmCampaign        String?
+  referralCodeUsed   String?
+  referredById       String?
+  referredBy         Student?       @relation("ReferralRelation", fields: [referredById], references: [id])
+  referrals          Student[]      @relation("ReferralRelation")
+  campusCaptainId    String?
+  campusCaptain      CampusCaptain? @relation(fields: [campusCaptainId], references: [id])
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  isDemo             Boolean        @default(false)
+
+  @@index([referredById])
+  @@index([campusCaptainId])
+}
+
+model CampusCaptain {
+  id          String    @id @default(cuid())
+  captainName String
+  college     String
+  code        String    @unique
+  target      Int
+  createdAt   DateTime  @default(now())
+  isDemo      Boolean   @default(false)
+  students    Student[]
+}
